@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kraken Triple Temps</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #050505;
+      --circle-bg: #f7f7f7;
+      --circle-border: #dcdcdc;
+      --text-main: #111111;
+      --text-sub: #555555;
+      --accent: #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    .circle {
+      position: relative;
+      width: 100vmin;
+      height: 100vmin;
+      max-width: 480px;
+      max-height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, var(--circle-bg));
+      border: 4px solid var(--circle-border);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3),
+        0 18px 40px rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8%;
+    }
+
+    .inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 40px;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10% 8%;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      text-align: center;
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .temps {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      gap: 6%;
+      padding-top: 4%;
+      padding-bottom: 4%;
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .label {
+      font-size: 0.8rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+    }
+
+    .value-group {
+      text-align: right;
+    }
+
+    .temp {
+      font-weight: 700;
+      font-size: 1.9rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+
+    .unit {
+      font-size: 0.7rem;
+      margin-left: 2px;
+      color: var(--text-sub);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      font-size: 0.65rem;
+      color: var(--text-sub);
+      opacity: 0.8;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--text-sub);
+      align-self: center;
+    }
+
+    @media (max-aspect-ratio: 3/4) {
+      .circle {
+        width: 90vmin;
+        height: 90vmin;
+      }
+      .temp {
+        font-size: 1.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="circle">
+    <div class="inner">
+      <div class="header">System Temps</div>
+
+      <div class="temps">
+        <div class="row">
+          <div class="label">CPU</div>
+          <div class="value-group">
+            <span id="cpuTemp" class="temp">--</span><span class="unit">°C</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">GPU</div>
+          <div class="value-group">
+            <span id="gpuTemp" class="temp">--</span><span class="unit">°C</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">Liquid</div>
+          <div class="value-group">
+            <span id="liqTemp" class="temp">--</span><span class="unit">°C</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>NZXT</span>
+        <span class="dot"></span>
+        <span>WEB INTEGRATION</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cpuTempEl = document.getElementById("cpuTemp");
+    const gpuTempEl = document.getElementById("gpuTemp");
+    const liqTempEl = document.getElementById("liqTemp");
+
+    function pickTemp(obj, extraMatchers = []) {
+      if (!obj) return null;
+
+      const directKeys = [
+        "temperature",
+        "temp",
+        "temperatureC",
+        "temperatureCelsius",
+        ...extraMatchers,
+      ];
+
+      for (const k of directKeys) {
+        if (typeof obj[k] === "number") return obj[k];
+      }
+
+      // Fallback: look for any numeric key containing "temp"
+      for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === "number" && /temp/i.test(k)) return v;
+      }
+      return null;
+    }
+
+    function setSafe(el, value) {
+      if (typeof value === "number" && Number.isFinite(value)) {
+        el.textContent = Math.round(value).toString();
+      } else {
+        el.textContent = "--";
+      }
+    }
+
+    function updateFromMonitoringData(data) {
+      const cpu = data?.cpus?.[0];
+      const gpu = data?.gpus?.[0];
+      const kraken = data?.kraken?.[0];
+
+      const cpuTemp = pickTemp(cpu);
+      const gpuTemp = pickTemp(gpu);
+      const liqTemp = pickTemp(kraken, [
+        "liquidTemperature",
+        "coolantTemp",
+        "liquidTemp",
+      ]);
+
+      setSafe(cpuTempEl, cpuTemp);
+      setSafe(gpuTempEl, gpuTemp);
+      setSafe(liqTempEl, liqTemp);
+    }
+
+    // NZXT CAM runtime
+    window.nzxt = {
+      v1: {
+        onMonitoringDataUpdate: updateFromMonitoringData,
+      },
+    };
+
+    // Browser preview (when not running inside CAM)
+    if (!window.__NZXT_CAM_PREVIEW__) {
+      window.__NZXT_CAM_PREVIEW__ = true;
+      let t = 0;
+      setInterval(() => {
+        t += 0.05;
+        const fake = (base, amp) => base + Math.sin(t) * amp;
+        updateFromMonitoringData({
+          cpus: [{ temperature: fake(58, 6) }],
+          gpus: [{ temperature: fake(65, 8) }],
+          kraken: [{ liquidTemperature: fake(40, 2) }],
+        });
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
