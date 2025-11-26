@@ -7,8 +7,8 @@
   <style>
     :root {
       --bg: #000000;
-      --circle-bg: #f8f8f8;
-      --circle-border: #e0e0e0;
+      --circle-bg: #f9f9f9;
+      --circle-border: #dfdfdf;
       --text-main: #111111;
       --text-sub: #666666;
       --accent: #000000;
@@ -23,7 +23,7 @@
     body {
       width: 100vw;
       height: 100vh;
-      background: var(--bg);
+      background: var(--bg); /* black ring around the disc */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -33,41 +33,40 @@
       overflow: hidden;
     }
 
-    /* Use vmin so everything scales with the round LCD */
+    /* Outer helper that roughly matches the round LCD */
     .circle {
-      position: relative;
-      width: 96vmin;
-      height: 96vmin;
+      width: 94vmin;
+      height: 94vmin;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 20%, #ffffff, var(--circle-bg));
-      border: 3px solid var(--circle-border);
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 3vmin;
     }
 
+    /* White disc inside black background */
     .inner {
-      width: 100%;
-      height: 100%;
-      border-radius: 3vmin;
-      background: rgba(255, 255, 255, 0.96);
+      width: 80vmin;
+      height: 80vmin;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, var(--circle-bg));
+      box-shadow:
+        0 0 0 1.4vmin var(--bg),              /* clean edge against LCD mask */
+        0 0 0 0.4vmin var(--circle-border),   /* subtle border */
+        0 10px 28px rgba(0, 0, 0, 0.45);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 5vmin 6vmin;
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+      padding: 7vmin 8vmin;
     }
 
     .header {
       text-align: center;
-      font-size: 1.8vmin;
-      letter-spacing: 0.25em;
+      font-size: 2.2vmin;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--text-sub);
-      padding-bottom: 1.5vmin;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      padding-bottom: 2vmin;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.09);
     }
 
     .temps {
@@ -75,9 +74,9 @@
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
-      gap: 2.2vmin;
-      padding-top: 1.5vmin;
-      padding-bottom: 1.5vmin;
+      gap: 2.4vmin;
+      padding-top: 2vmin;
+      padding-bottom: 2vmin;
     }
 
     .row {
@@ -87,10 +86,11 @@
     }
 
     .label {
-      font-size: 1.9vmin;
-      letter-spacing: 0.22em;
+      font-size: 2.4vmin;
+      letter-spacing: 0.24em;
       text-transform: uppercase;
       color: var(--text-sub);
+      font-weight: 600; /* slightly bold for readability */
     }
 
     .value-group {
@@ -99,30 +99,31 @@
 
     .temp {
       font-weight: 700;
-      font-size: 5.4vmin;
+      font-size: 6.2vmin;  /* BIG numbers */
       letter-spacing: 0.06em;
       color: var(--accent);
     }
 
     .unit {
-      font-size: 1.9vmin;
+      font-size: 2.4vmin;
       margin-left: 0.4vmin;
       color: var(--text-sub);
+      font-weight: 500;
     }
 
     .footer {
       display: flex;
       justify-content: center;
-      gap: 0.8vmin;
-      font-size: 1.6vmin;
+      gap: 0.9vmin;
+      font-size: 2.0vmin;
       color: var(--text-sub);
-      opacity: 0.85;
-      padding-top: 0.8vmin;
+      opacity: 0.88;
+      padding-top: 1vmin;
     }
 
     .dot {
-      width: 0.5vmin;
-      height: 0.5vmin;
+      width: 0.6vmin;
+      height: 0.6vmin;
       border-radius: 999px;
       background: var(--text-sub);
       align-self: center;
